@@ -31,6 +31,7 @@ const SignupForm: React.FC<Props> = ({
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [successMsg, setSuccessMsg] = useState<String>('');
   
   // handle states input change
   useEffect(() => {
@@ -74,7 +75,8 @@ const SignupForm: React.FC<Props> = ({
 
     if (validateForm()) {
       // Perform form submission (e.g., send a POST request)
-      console.log(JSON.stringify(formData));
+      console.log('POST', JSON.stringify(formData));
+      setSuccessMsg("The form is submitted, please check the console logs for details.");
     } else {
       // Focus on the first input field with an error
       const firstErrorField = Object.keys(errors)[0];
@@ -93,12 +95,12 @@ const SignupForm: React.FC<Props> = ({
 
   return (
     <div>
-      {error && <p>Error: {error}</p>}
+      {error && <p className='error'>Error: {error}</p>}
+      {successMsg && <p className='success'>{successMsg}</p>}
       <form className="signup-form" onSubmit={handleSubmit}>
         <FormControl
           name="firstName"
           value={formData.firstName}
-          options={[]}
           error={errors.firstName || ''}
           onChange={handleInputChange}
           autoFocus={true}
@@ -106,7 +108,6 @@ const SignupForm: React.FC<Props> = ({
         <FormControl
           name="lastName"
           value={formData.lastName}
-          options={[]}
           error={errors.lastName || ''}
           onChange={handleInputChange}
         />
@@ -136,6 +137,7 @@ const SignupForm: React.FC<Props> = ({
           value={formData.password}
           error={errors.password || ''}
           onChange={handleInputChange}
+          isPassword={true}
         />
         <button type="submit">Submit</button>
       </form>

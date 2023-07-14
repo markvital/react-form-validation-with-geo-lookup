@@ -20,11 +20,18 @@
 	border-radius: 4px;
 	border: 1px solid #ccc;
   }
+
+  .error, .succes {
+	font-size: 14px;
+	margin-top: 4px;
+  }
   
   .error {
 	color: red;
-	font-size: 14px;
-	margin-top: 4px;
+  }
+
+  .success {
+	color: green
   }
   
   button {

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import SignupForm from './SignupForm';
 
+const API_BASE_URL = 'https://www.universal-tutorial.com/api';
+
 const FormContainer: React.FC = () => {
-  // We could store access token somewhere in local storage or cookies to avoid extra request between reloads
   const [authToken, setAuthToken] = useState<string>('');
   const [stateOptions, setStateOptions] = useState<string[]>([]);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
@@ -11,10 +12,19 @@ const FormContainer: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [cachedCities, setCachedCities] = useState<{ [state: string]: string[] }>({});
 
+  // headers used for authenticated API GET requests after the token is obtained
+  const authGetOpts =  {
+	method: 'GET',
+	headers: {
+	  Authorization: `Bearer ${authToken}`,
+	  Accept: 'application/json',
+	},
+  };
+  
   useEffect(() => {
 	const fetchAccessToken = async () => {
 		try {
-		  const response = await fetch('https://www.universal-tutorial.com/api/getaccesstoken', {
+		  const response = await fetch(`${API_BASE_URL}/getaccesstoken`, {
 			method: 'GET',
 			headers: {
 			  Accept: 'application/json',
@@ -27,6 +37,8 @@ const FormContainer: React.FC = () => {
 			const data = await response.json();
 			const { auth_token } = data;
 			setAuthToken(auth_token);
+			// We could store access token somewhere in local storage or cookies to avoid extra request between reloads
+			// storing in memory just for the exersise
 		  } else {
 			setError('Failed to fetch access token');
 		  }
@@ -41,14 +53,7 @@ const FormContainer: React.FC = () => {
   useEffect(() => {
 	const fetchUSStates = async () => {
 		try {
-		  const response = await fetch('https://www.universal-tutorial.com/api/states/United States', {
-			method: 'GET',
-			headers: {
-			  Authorization: `Bearer ${authToken}`,
-			  Accept: 'application/json',
-			},
-		  });
-	
+		  const response = await fetch(`${API_BASE_URL}/states/United States`, authGetOpts);
 		  if (response.ok) {
 			const data = await response.json();
 			const extractedStateOptions = data.map((item: { state_name: string }) => item.state_name);
@@ -75,17 +80,7 @@ const FormContainer: React.FC = () => {
 		if (cachedCities[selectedState]) {
 			setCityOptions(cachedCities[selectedState]);
 		} else {
-			const response = await fetch(
-				`https://www.universal-tutorial.com/api/cities/${selectedState}`,
-				{
-					method: 'GET',
-					headers: {
-						Authorization: `Bearer ${authToken}`,
-						Accept: 'application/json',
-					},
-				}
-			);
-		
+			const response = await fetch(`${API_BASE_URL}/cities/${selectedState}`, authGetOpts);
 			if (response.ok) {
 				const data = await response.json();
 				const extractedCityOptions = data.map((item: { city_name: string }) => item.city_name);

@@ -10,6 +10,7 @@ interface FormControlProps {
 	onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 	autoFocus?: boolean;
 	disabled?: boolean;
+	isPassword?: boolean;
   }
   
   const FormControl: React.FC<FormControlProps> = ({
@@ -20,6 +21,7 @@ interface FormControlProps {
 	onChange,
 	autoFocus = false,
 	disabled = false,
+	isPassword = false // password field
   }) => {
 	const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
   
@@ -64,7 +66,7 @@ interface FormControlProps {
 	  return (
 		<input
 		  className="form-control"
-		  type="text"
+		  type={isPassword ? "password" : "text"}
 		  id={name as string}
 		  name={name as string}
 		  value={value}
@@ -85,3 +87,4 @@ interface FormControlProps {
   };
 
   export default FormControl;
+  
