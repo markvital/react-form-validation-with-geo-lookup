@@ -118,8 +118,6 @@ const SignupForm: React.FC = () => {
   useEffect(() => {
     if (authToken) {
       fetchUSStates();
-    } else {
-      fetchAccessToken();
     }
   }, [authToken]);
 
@@ -169,6 +167,7 @@ const SignupForm: React.FC = () => {
         const extractedStateOptions = data.map((item: { state_name: string }) => item.state_name);
         setStateOptions(extractedStateOptions);
         setError('');
+		console.log('fetching states', extractedStateOptions);
       } else {
         setError('Failed to fetch U.S. states');
       }
@@ -199,6 +198,7 @@ const SignupForm: React.FC = () => {
         const extractedCityOptions = data.map((item: { city_name: string }) => item.city_name);
         setCityOptions(extractedCityOptions);
         setError('');
+		console.log('fetching cities', extractedCityOptions)
       } else {
         setError('Failed to fetch cities');
       }
