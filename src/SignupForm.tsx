@@ -110,6 +110,7 @@ const SignupForm: React.FC = () => {
   const [loadingState, setLoadingState] = useState<boolean>(true);
   const [loadingCity, setLoadingCity] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [cachedCities, setCachedCities] = useState<{ [state: string]: string[] }>({});
 
   useEffect(() => {
     fetchAccessToken();
@@ -167,7 +168,6 @@ const SignupForm: React.FC = () => {
         const extractedStateOptions = data.map((item: { state_name: string }) => item.state_name);
         setStateOptions(extractedStateOptions);
         setError('');
-		console.log('fetching states', extractedStateOptions);
       } else {
         setError('Failed to fetch U.S. states');
       }
@@ -182,28 +182,31 @@ const SignupForm: React.FC = () => {
     setLoadingCity(true);
     setCityOptions([]);
     try {
-      const response = await fetch(
-        `https://www.universal-tutorial.com/api/cities/${formData.state}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            Accept: 'application/json',
-          },
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const extractedCityOptions = data.map((item: { city_name: string }) => item.city_name);
-        setCityOptions(extractedCityOptions);
-        setError('');
-		console.log('fetching cities', extractedCityOptions)
+      if (cachedCities[formData.state]) {
+        setCityOptions(cachedCities[formData.state]);
       } else {
-        setError('Failed to fetch cities');
+        const response = await fetch(
+          `https://www.universal-tutorial.com/api/cities/${formData.state}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              Accept: 'application/json',
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const extractedCityOptions = data.map((item: { city_name: string }) => item.city_name);
+          setCityOptions(extractedCityOptions);
+          setCachedCities({ ...cachedCities, [formData.state]: extractedCityOptions });
+        } else {
+          setError(`Failed to fetch cities for ${formData.state}`);
+        }
       }
     } catch (error) {
-      setError('Failed to fetch cities');
+      setError(`Failed to fetch cities for ${formData.state}`);
     } finally {
       setLoadingCity(false);
     }
