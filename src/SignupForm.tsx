@@ -105,10 +105,19 @@ const SignupForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [authToken, setAuthToken] = useState<string>('');
+  const [stateOptions, setStateOptions] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     fetchAccessToken();
   }, []);
+
+  useEffect(() => {
+    if (authToken) {
+      fetchUSStates();
+    }
+  }, [authToken]);
 
   const fetchAccessToken = async () => {
     try {
@@ -125,14 +134,35 @@ const SignupForm: React.FC = () => {
         const data = await response.json();
         const { auth_token } = data;
         setAuthToken(auth_token);
-        console.log("auth-token", auth_token);
       } else {
-        // Handle error response
-        console.error('Failed to fetch access token');
+        setError('Failed to fetch access token');
       }
     } catch (error) {
-      // Handle fetch error
-      console.error('Failed to fetch access token', error);
+      setError('Failed to fetch access token');
+    }
+  };
+
+  const fetchUSStates = async () => {
+    try {
+      const response = await fetch('https://www.universal-tutorial.com/api/states/United States', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          Accept: 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const extractedStateOptions = data.map((item: { state_name: string }) => item.state_name);
+        setStateOptions(extractedStateOptions);
+      } else {
+        setError('Failed to fetch U.S. states');
+      }
+    } catch (error) {
+      setError('Failed to fetch U.S. states');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -195,63 +225,70 @@ const SignupForm: React.FC = () => {
 
   const isCityDisabled = formData.state.trim() === '';
 
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
   return (
-    <form className="signup-form" onSubmit={handleSubmit}>
-      <FormControl
-        name="firstName"
-        value={formData.firstName}
-        options={[]}
-        error={errors.firstName || ''}
-        onChange={handleInputChange}
-        autoFocus={true}
-      />
-      <FormControl
-        name="lastName"
-        value={formData.lastName}
-        options={[]}
-        error={errors.lastName || ''}
-        onChange={handleInputChange}
-        autoFocus={false}
-      />
-      <FormControl
-        name="state"
-        value={formData.state}
-        options={['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut']}
-        error={errors.state || ''}
-        onChange={handleStateChange}
-        autoFocus={false}
-      />
-      <FormControl
-        name="city"
-        value={formData.city}
-        options={
-          formData.state === 'California'
-            ? ['Los Angeles', 'San Francisco', 'San Diego']
-            : []
-        }
-        error={errors.city || ''}
-        onChange={handleInputChange}
-        autoFocus={false}
-        disabled={isCityDisabled}
-      />
-      <FormControl
-        name="email"
-        value={formData.email}
-        options={[]}
-        error={errors.email || ''}
-        onChange={handleInputChange}
-        autoFocus={false}
-      />
-      <FormControl
-        name="password"
-        value={formData.password}
-        options={[]}
-        error={errors.password || ''}
-        onChange={handleInputChange}
-        autoFocus={false}
-      />
-      <button type="submit">Submit</button>
-    </form>
+    <div>
+      {error && <p>Error: {error}</p>}
+      <form className="signup-form" onSubmit={handleSubmit}>
+        <FormControl
+          name="firstName"
+          value={formData.firstName}
+          options={[]}
+          error={errors.firstName || ''}
+          onChange={handleInputChange}
+          autoFocus={true}
+        />
+        <FormControl
+          name="lastName"
+          value={formData.lastName}
+          options={[]}
+          error={errors.lastName || ''}
+          onChange={handleInputChange}
+          autoFocus={false}
+        />
+        <FormControl
+          name="state"
+          value={formData.state}
+          options={stateOptions}
+          error={errors.state || ''}
+          onChange={handleInputChange}
+          autoFocus={false}
+        />
+        <FormControl
+          name="city"
+          value={formData.city}
+          options={
+            formData.state === 'California'
+              ? ['Los Angeles', 'San Francisco', 'San Diego']
+              : []
+          }
+          error={errors.city || ''}
+          onChange={handleInputChange}
+          autoFocus={false}
+          disabled={isCityDisabled}
+        />
+        <FormControl
+          name="email"
+          value={formData.email}
+          options={[]}
+          error={errors.email || ''}
+          onChange={handleInputChange}
+          autoFocus={false}
+        />
+        <FormControl
+          name="password"
+          value={formData.password}
+          options={[]}
+          error={errors.password || ''}
+          onChange={handleInputChange}
+          autoFocus={false}
+        />
+        <button type="submit">Submit</button>
+      </form>
+    </div>
   );
 };
 
