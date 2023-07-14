@@ -106,7 +106,9 @@ const SignupForm: React.FC = () => {
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [authToken, setAuthToken] = useState<string>('');
   const [stateOptions, setStateOptions] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [loadingState, setLoadingState] = useState<boolean>(true);
+  const [loadingCity, setLoadingCity] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -116,8 +118,17 @@ const SignupForm: React.FC = () => {
   useEffect(() => {
     if (authToken) {
       fetchUSStates();
+    } else {
+      fetchAccessToken();
     }
   }, [authToken]);
+
+  useEffect(() => {
+    if (authToken && formData.state) {
+      fetchUSCities();
+    }
+  }, [authToken, formData.state]);
+  
 
   const fetchAccessToken = async () => {
     try {
@@ -129,7 +140,7 @@ const SignupForm: React.FC = () => {
           'user-email': 'giblets-08crispy@icloud.com',
         },
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         const { auth_token } = data;
@@ -141,8 +152,9 @@ const SignupForm: React.FC = () => {
       setError('Failed to fetch access token');
     }
   };
-
+  
   const fetchUSStates = async () => {
+    setLoadingState(true);
     try {
       const response = await fetch('https://www.universal-tutorial.com/api/states/United States', {
         method: 'GET',
@@ -151,18 +163,49 @@ const SignupForm: React.FC = () => {
           Accept: 'application/json',
         },
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         const extractedStateOptions = data.map((item: { state_name: string }) => item.state_name);
         setStateOptions(extractedStateOptions);
+        setError('');
       } else {
         setError('Failed to fetch U.S. states');
       }
     } catch (error) {
       setError('Failed to fetch U.S. states');
     } finally {
-      setLoading(false);
+      setLoadingState(false);
+    }
+  };
+
+  const fetchUSCities = async () => {
+    setLoadingCity(true);
+    setCityOptions([]);
+    try {
+      const response = await fetch(
+        `https://www.universal-tutorial.com/api/cities/${formData.state}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const extractedCityOptions = data.map((item: { city_name: string }) => item.city_name);
+        setCityOptions(extractedCityOptions);
+        setError('');
+      } else {
+        setError('Failed to fetch cities');
+      }
+    } catch (error) {
+      setError('Failed to fetch cities');
+    } finally {
+      setLoadingCity(false);
     }
   };
 
@@ -225,7 +268,7 @@ const SignupForm: React.FC = () => {
 
   const isCityDisabled = formData.state.trim() === '';
 
-  if (loading) {
+  if (loadingState) {
     return <p>Loading...</p>;
   }
 
@@ -259,16 +302,12 @@ const SignupForm: React.FC = () => {
         />
         <FormControl
           name="city"
-          value={formData.city}
-          options={
-            formData.state === 'California'
-              ? ['Los Angeles', 'San Francisco', 'San Diego']
-              : []
-          }
+          value={loadingCity ? "loading..." : formData.city}
+          options={cityOptions}
           error={errors.city || ''}
           onChange={handleInputChange}
           autoFocus={false}
-          disabled={isCityDisabled}
+          disabled={loadingCity}
         />
         <FormControl
           name="email"
