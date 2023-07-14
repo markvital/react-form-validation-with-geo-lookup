@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './SignupForm.css';
 
 
@@ -104,6 +104,37 @@ const SignupForm: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [authToken, setAuthToken] = useState<string>('');
+
+  useEffect(() => {
+    fetchAccessToken();
+  }, []);
+
+  const fetchAccessToken = async () => {
+    try {
+      const response = await fetch('https://www.universal-tutorial.com/api/getaccesstoken', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'api-token': 'ZlRaKJeHEEVSrf8D-ITOyje9R69Re5glxLokD8Jbsq4wwOQ9PMbIZogB3DsMHYJK2c4',
+          'user-email': 'giblets-08crispy@icloud.com',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const { auth_token } = data;
+        setAuthToken(auth_token);
+        console.log("auth-token", auth_token);
+      } else {
+        // Handle error response
+        console.error('Failed to fetch access token');
+      }
+    } catch (error) {
+      // Handle fetch error
+      console.error('Failed to fetch access token', error);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
