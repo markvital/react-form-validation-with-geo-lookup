@@ -5,20 +5,20 @@ import { FormData } from './FormData';
 interface FormControlProps {
 	name: keyof FormData;
 	value: string;
-	options: string[];
+	options?: string[];
 	error: string;
 	onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-	autoFocus: boolean;
+	autoFocus?: boolean;
 	disabled?: boolean;
   }
   
   const FormControl: React.FC<FormControlProps> = ({
 	name,
 	value,
-	options,
+	options = [],
 	error,
 	onChange,
-	autoFocus,
+	autoFocus = false,
 	disabled = false,
   }) => {
 	const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
