@@ -1,7 +1,6 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import SignupForm from './SignupForm';
+import SignupForm from './SignupForm/SignupForm';
 
 function App() {
   return (
